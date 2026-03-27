@@ -1,0 +1,12 @@
+# Google OAuth credentials - NEVER commit these
+client_secret.json
+token.json
+
+# Downloaded files - no need to track these
+Downloads/
+
+# .NET build artifacts
+bin/
+obj/
+*.user
+.vs/
