@@ -28,6 +28,11 @@
             _manifestPath = Path.Combine(downloadsPath, "manifest.json");
         }
 
+        public ManifestRepository(string downloadsPath)
+        {
+            _manifestPath = Path.Combine(downloadsPath, "manifest.json");
+        }
+
         public async Task<SyncManifest> LoadAsync()
         {
             if (_cachedManifest is not null)

@@ -17,6 +17,12 @@
             EnsureDirectoryExists(_downloadsPath);
         }
 
+        public FileSystemService(string downloadsPath)
+        {
+            _downloadsPath = downloadsPath;
+            EnsureDirectoryExists(_downloadsPath);
+        }
+
         public string GetDownloadsPath() => _downloadsPath;
 
         public bool FileExists(string relativePath)

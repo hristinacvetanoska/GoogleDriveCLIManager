@@ -1,6 +1,7 @@
 ﻿namespace GoogleDriveCLIManager.Services
 {
     using Google.Apis.Drive.v3;
+    using GoogleDriveCLIManager.Helpers;
     using GoogleDriveCLIManager.Models;
     using GoogleDriveCLIManager.Services.Interfaces;
     using File = Google.Apis.Drive.v3.Data.File;
@@ -8,22 +9,6 @@
     public class GoogleDriveService : IGoogleDriveService
     {
         private readonly DriveService _driveService;
-
-        private static readonly Dictionary<string, string> ExportMimeTypes = new()
-    {
-        { "application/vnd.google-apps.document", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
-        { "application/vnd.google-apps.spreadsheet", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
-        { "application/vnd.google-apps.presentation", "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
-        { "application/vnd.google-apps.drawing", "image/png" }
-    };
-
-        private static readonly Dictionary<string, string> ExportExtensions = new()
-    {
-        { "application/vnd.google-apps.document", ".docx" },
-        { "application/vnd.google-apps.spreadsheet", ".xlsx" },
-        { "application/vnd.google-apps.presentation", ".pptx" },
-        { "application/vnd.google-apps.drawing", ".png" }
-    };
 
         public GoogleDriveService(DriveService driveService)
         {
@@ -63,8 +48,9 @@
             DriveFileInfo file, CancellationToken cancellationToken = default)
         {
             var memoryStream = new MemoryStream();
+            var exportMimeType = MimeTypeHelper.GetExportMimeType(file.MimeType);
 
-            if (ExportMimeTypes.TryGetValue(file.MimeType, out var exportMimeType))
+            if (!string.IsNullOrEmpty(exportMimeType))
             {
                 var exportRequest = _driveService.Files.Export(file.Id, exportMimeType);
                 await exportRequest.DownloadAsync(memoryStream, cancellationToken);
@@ -111,6 +97,10 @@
         public async Task<string> GetOrCreateFolderPathAsync(
             string drivePath, CancellationToken cancellationToken = default)
         {
+            if (drivePath.Equals("root", StringComparison.OrdinalIgnoreCase) ||
+                drivePath.Equals("/", StringComparison.OrdinalIgnoreCase))
+                return "root";
+
             var segments = drivePath
                 .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
@@ -234,8 +224,5 @@
                 _ => "application/octet-stream"
             };
         }
-
-        public static string GetExportExtension(string mimeType)
-            => ExportExtensions.GetValueOrDefault(mimeType, string.Empty);
     }
 }

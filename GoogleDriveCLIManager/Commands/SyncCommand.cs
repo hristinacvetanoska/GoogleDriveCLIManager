@@ -1,8 +1,7 @@
 ﻿namespace GoogleDriveCLIManager.Commands
 {
-    using GoogleDriveCLI.Models;
+    using GoogleDriveCLIManager.Helpers;
     using GoogleDriveCLIManager.Models;
-    using GoogleDriveCLIManager.Services;
     using GoogleDriveCLIManager.Services.Interfaces;
     using Spectre.Console;
     using Spectre.Console.Cli;
@@ -104,7 +103,7 @@
 
         private async Task DownloadFileAsync(
             DriveFileInfo file,
-            SyncManifest manifest,
+            GoogleDriveCLI.Models.SyncManifest manifest,
             ProgressTask progressTask,
     CancellationToken cancellationToken)
         {
@@ -113,7 +112,7 @@
                 var sanitizedName = _fileSystemService.SanitizeFileName(file.Name);
 
                 if (file.IsGoogleWorkspaceFile)
-                    sanitizedName += GoogleDriveService.GetExportExtension(file.MimeType);
+                    sanitizedName += MimeTypeHelper.GetExportExtension(file.MimeType);
 
                 await using var stream = await _driveService.DownloadFileAsync(file);
                 await _fileSystemService.SaveFileAsync(sanitizedName, stream);
@@ -160,7 +159,7 @@
             table.AddRow("[green]Successfully downloaded[/]", $"[green]{_successCount}[/]");
             table.AddRow("[yellow]Skipped (already synced)[/]", $"[yellow]{_skippedCount}[/]");
             table.AddRow("[red]Failed[/]", $"[red]{_failureCount}[/]");
-            table.AddRow("Total data downloaded", FormatBytes(_totalBytesDownloaded));
+            table.AddRow("Total data downloaded", FileSizeFormatter.Format(_totalBytesDownloaded));
             table.AddRow("Time elapsed", $"{elapsed:mm\\:ss\\.ff}");
 
             AnsiConsole.Write(table);
@@ -173,13 +172,5 @@
                     AnsiConsole.MarkupLine($"  [red]✗[/] {failed}");
             }
         }
-
-        private static string FormatBytes(long bytes) => bytes switch
-        {
-            >= 1_073_741_824 => $"{bytes / 1_073_741_824.0:F2} GB",
-            >= 1_048_576 => $"{bytes / 1_048_576.0:F2} MB",
-            >= 1_024 => $"{bytes / 1_024.0:F2} KB",
-            _ => $"{bytes} B"
-        };
     }
 }

@@ -1,5 +1,6 @@
 ﻿namespace GoogleDriveCLIManager.Commands
 {
+    using GoogleDriveCLIManager.Helpers;
     using GoogleDriveCLIManager.Models;
     using GoogleDriveCLIManager.Services.Interfaces;
     using Spectre.Console;
@@ -73,17 +74,17 @@
                     : "[yellow]✗ Not Downloaded[/]";
 
                 var size = file.Size.HasValue
-                    ? FormatBytes(file.Size.Value)
+                    ? FileSizeFormatter.Format(file.Size.Value)
                     : "[grey]N/A[/]";
 
                 var modified = file.ModifiedTime.HasValue
                     ? file.ModifiedTime.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
                     : "[grey]Unknown[/]";
 
-                var fileType = GetFileType(file.MimeType);
+                var fileType = MimeTypeHelper.GetFileType(file.MimeType);
 
                 table.AddRow(
-                    EscapeMarkup(file.Name),
+                    MarkupHelper.Escape(file.Name),
                     fileType,
                     size,
                     modified,
@@ -97,30 +98,5 @@
 
             return 0;
         }
-
-        private static string GetFileType(string mimeType) => mimeType switch
-        {
-            "application/vnd.google-apps.folder" => "[blue]📁 Folder[/]",
-            "application/vnd.google-apps.document" => "[blue]📝 Google Doc[/]",
-            "application/vnd.google-apps.spreadsheet" => "[green]📊 Google Sheet[/]",
-            "application/vnd.google-apps.presentation" => "[yellow]📊 Google Slides[/]",
-            "application/pdf" => "[red]📄 PDF[/]",
-            "image/jpeg" or "image/png" or "image/gif" => "[magenta]🖼 Image[/]",
-            "video/mp4" or "video/quicktime" => "[blue]🎥 Video[/]",
-            "audio/mpeg" or "audio/wav" => "[blue]🎵 Audio[/]",
-            "application/zip" => "[grey]🗜 Archive[/]",
-            _ => "[grey]📄 File[/]"
-        };
-
-        private static string FormatBytes(long bytes) => bytes switch
-        {
-            >= 1_073_741_824 => $"{bytes / 1_073_741_824.0:F2} GB",
-            >= 1_048_576 => $"{bytes / 1_048_576.0:F2} MB",
-            >= 1_024 => $"{bytes / 1_024.0:F2} KB",
-            _ => $"{bytes} B"
-        };
-
-        private static string EscapeMarkup(string text)
-            => text.Replace("[", "[[").Replace("]", "]]");
     }
 }

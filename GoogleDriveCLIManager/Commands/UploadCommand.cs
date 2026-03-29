@@ -1,5 +1,6 @@
 ﻿namespace GoogleDriveCLIManager.Commands
 {
+    using GoogleDriveCLIManager.Helpers;
     using GoogleDriveCLIManager.Services.Interfaces;
     using Spectre.Console;
     using Spectre.Console.Cli;
@@ -14,7 +15,7 @@
 
         [CommandArgument(1, "[drive_path]")]
         [Description("Target folder path on Google Drive. If not specified, uploads to My Drive root")]
-        public string DrivePath { get; set; } = string.Empty;
+        public string DrivePath { get; set; } = "root";
     }
 
     public class UploadCommand : AsyncCommand<UploadCommandSettings>
@@ -43,7 +44,7 @@
 
             AnsiConsole.MarkupLine($"[bold blue]Uploading file:[/] [yellow]{fileName}[/]");
             AnsiConsole.MarkupLine($"[bold blue]Destination:[/] [yellow]{settings.DrivePath}[/]");
-            AnsiConsole.MarkupLine($"[bold blue]Size:[/] [yellow]{FormatBytes(fileSize)}[/]");
+            AnsiConsole.MarkupLine($"[bold blue]Size:[/] [yellow]{FileSizeFormatter.Format(fileSize)}[/]");
             AnsiConsole.WriteLine();
 
             try
@@ -93,7 +94,7 @@
 
                 table.AddRow("File name", fileName);
                 table.AddRow("Drive path", settings.DrivePath);
-                table.AddRow("File size", FormatBytes(fileSize));
+                table.AddRow("File size", FileSizeFormatter.Format(fileSize));
                 table.AddRow("Drive file ID", uploadedFileId);
 
                 AnsiConsole.Write(table);
@@ -125,13 +126,5 @@
             {
             }
         }
-
-        private static string FormatBytes(long bytes) => bytes switch
-        {
-            >= 1_073_741_824 => $"{bytes / 1_073_741_824.0:F2} GB",
-            >= 1_048_576 => $"{bytes / 1_048_576.0:F2} MB",
-            >= 1_024 => $"{bytes / 1_024.0:F2} KB",
-            _ => $"{bytes} B"
-        };
     }
 }

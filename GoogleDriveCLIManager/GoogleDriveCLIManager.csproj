@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Infrastructure\Interfaces\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 <ItemGroup>
