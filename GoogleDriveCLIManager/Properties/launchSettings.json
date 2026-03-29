@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "sync": {
+      "commandName": "Project",
+      "commandLineArgs": "sync"
+    },
+    "search": {
+      "commandName": "Project",
+      "commandLineArgs": "search  testFile"
+    },
+    "upload": {
+      "commandName": "Project",
+      "commandLineArgs": "upload ./test.pdf Work/Reports"
+    }
+  }
+}

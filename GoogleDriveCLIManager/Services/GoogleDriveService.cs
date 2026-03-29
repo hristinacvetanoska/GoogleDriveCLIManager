@@ -42,7 +42,7 @@
                 request.Fields = "nextPageToken, files(id, name, mimeType, size, modifiedTime, parents)";
                 request.PageSize = 1000;
                 request.PageToken = pageToken;
-                request.Q = "mimeType != 'application/vnd.google-apps.folder' and trashed = false";
+                request.Q = "trashed = false and 'me' in owners and mimeType != 'application/vnd.google-apps.folder'";
 
                 var response = await ExecuteWithRetryAsync(
                     () => request.ExecuteAsync(cancellationToken));

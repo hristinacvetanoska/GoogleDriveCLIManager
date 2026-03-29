@@ -5,6 +5,7 @@
     using Google.Apis.Drive.v3.Data;
     using Google.Apis.Services;
     using Google.Apis.Util.Store;
+    using GoogleDriveCLIManager.Infrastructure.Exceptions;
     using GoogleDriveCLIManager.Services.Interfaces;
     using System.IO;
 
@@ -24,25 +25,43 @@
         public async Task<DriveService> GetAuthenticatedServiceAsync(
             CancellationToken cancellationToken = default)
         {
-            var credentialsPath = FindCredentialsFile();
 
-            UserCredential credential;
-
-            await using var stream = new FileStream(credentialsPath, FileMode.Open, FileAccess.Read);
-
-            credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                GoogleClientSecrets.FromStream(stream).Secrets,
-                Scopes,
-                user: "user",                          
-                cancellationToken,
-                new FileDataStore(TokenStorePath, fullPath: true)
-            );
-
-            return new DriveService(new BaseClientService.Initializer
+            try
             {
-                HttpClientInitializer = credential,
-                ApplicationName = ApplicationName
-            });
+                var credentialsPath = FindCredentialsFile();
+
+                UserCredential credential;
+
+                await using var stream = new FileStream(credentialsPath, FileMode.Open, FileAccess.Read);
+
+                credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.FromStream(stream).Secrets,
+                    Scopes,
+                    user: "user",
+                    cancellationToken,
+                    new FileDataStore(TokenStorePath, fullPath: true)
+                );
+
+                return new DriveService(new BaseClientService.Initializer
+                {
+                    HttpClientInitializer = credential,
+                    ApplicationName = ApplicationName
+                });
+            }
+            catch (FileNotFoundException)
+            {
+                throw;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new DriveAuthenticationException(
+                    "Failed to authenticate with Google Drive. " +
+                    "Please check your client_secret.json and try again.", ex);
+            }
         }
 
         private static string FindCredentialsFile()

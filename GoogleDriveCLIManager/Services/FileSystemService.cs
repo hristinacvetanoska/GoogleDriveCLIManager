@@ -8,7 +8,12 @@
 
         public FileSystemService()
         {
-            _downloadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Downloads");
+            _downloadsPath = Path.Combine(
+                Path.GetDirectoryName(AppContext.BaseDirectory)!,
+                "..", "..", "..",
+                "Downloads"
+                );
+            _downloadsPath = Path.GetFullPath(_downloadsPath);
             EnsureDirectoryExists(_downloadsPath);
         }
 

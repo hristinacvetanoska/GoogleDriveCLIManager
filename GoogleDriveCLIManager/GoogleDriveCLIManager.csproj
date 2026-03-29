@@ -17,6 +17,11 @@
 
   <ItemGroup>
     <Folder Include="Infrastructure\Interfaces\" />
+    <Folder Include="Properties\" />
   </ItemGroup>
-
+<ItemGroup>
+    <None Update="client_secret.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+</ItemGroup>
 </Project>
