@@ -325,7 +325,6 @@ GoogleDriveCLIManager/
 ├── Models/
 │   ├── DriveFileInfo.cs
     ├── ManifestEntry.cs
-│   ├── SyncStatistics.cs
 │   └── SyncManifest.cs
 ├── Infrastructure/
 │   ├── Exceptions/
