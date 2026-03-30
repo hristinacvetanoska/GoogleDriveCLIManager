@@ -6,18 +6,33 @@
     using Spectre.Console.Cli;
     using System.ComponentModel;
 
-
+    /// <summary>
+    /// Settings for the upload command.
+    /// </summary>
     public class UploadCommandSettings : CommandSettings
     {
+        /// <summary>
+        /// Gets or sets the full local file system path of the file to upload.
+        /// </summary>
         [CommandArgument(0, "<local_path>")]
         [Description("Path to the local file you want to upload")]
         public string LocalPath { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets the target folder path on Google Drive.
+        /// If not specified, the file is uploaded directly to My Drive root.
+        /// Nested paths are supported (e.g. "Work/Reports/2024").
+        /// Non-existent folders are created automatically.
+        /// </summary>
         [CommandArgument(1, "[drive_path]")]
         [Description("Target folder path on Google Drive. If not specified, uploads to My Drive root")]
         public string DrivePath { get; set; } = "root";
     }
 
+    /// <summary>
+    /// Command that uploads a local file to a specific folder path on Google Drive.
+    /// Creates the target folder path automatically if it does not exist.
+    /// </summary>
     public class UploadCommand : AsyncCommand<UploadCommandSettings>
     {
         private readonly IGoogleDriveService _driveService;
@@ -27,6 +42,15 @@
             _driveService = driveService;
         }
 
+        /// <summary>
+        /// Executes the upload command.
+        /// Validates the local file exists, resolves or creates the target Drive folder,
+        /// uploads the file with a progress bar and displays a summary on completion.
+        /// </summary>
+        /// <param name="context">The command context provided by Spectre.Console.Cli.</param>
+        /// <param name="settings">The command settings containing local path and Drive path.</param>
+        /// <param name="cancellationToken">Token to cancel the operation.</param>
+        /// <returns>Exit code 0 on success, 1 on failure.</returns>
         public override async Task<int> ExecuteAsync(
             CommandContext context,
             UploadCommandSettings settings,
@@ -110,6 +134,13 @@
             }
         }
 
+        /// <summary>
+        /// Simulates upload progress in the console progress bar.
+        /// Gradually fills the bar to 90% while the upload runs in the background.
+        /// The remaining 10% completes when the upload finishes.
+        /// </summary>
+        /// <param name="progressTask">The Spectre.Console progress bar task to update.</param>
+        /// <param name="cancellationToken">Token to stop the simulation when upload completes.</param>
         private static async Task SimulateProgressAsync(
             ProgressTask progressTask,
             CancellationToken cancellationToken)

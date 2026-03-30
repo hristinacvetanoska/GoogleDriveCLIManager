@@ -8,18 +8,33 @@
     using System.ComponentModel;
 
 
+    /// <summary>
+    /// Settings for the search command.
+    /// </summary>
     public class SearchCommandSettings : CommandSettings
     {
+        /// <summary>
+        /// Gets or sets the search term used to find files on Google Drive.
+        /// </summary>
         [CommandArgument(0, "<query>")]
         [Description("The search term to find files on Google Drive")]
         public string Query { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// Command that searches for files on Google Drive by name
+    /// and displays results with their local sync status.
+    /// </summary>
     public class SearchCommand : AsyncCommand<SearchCommandSettings>
     {
         private readonly IGoogleDriveService _driveService;
         private readonly IManifestRepository _manifestRepository;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SearchCommand"/> class with the specified dependencies.
+        /// </summary>
+        /// <param name="driveService">Service used to interact with Google Drive.</param>
+        /// <param name="manifestRepository">Repository for accessing local sync state.</param>
         public SearchCommand(
             IGoogleDriveService driveService,
             IManifestRepository manifestRepository)
@@ -28,6 +43,16 @@
             _manifestRepository = manifestRepository;
         }
 
+        /// <summary>
+        /// Executes the search command.
+        /// Queries the Google Drive API for files matching the search term,
+        /// checks the local manifest for sync status of each result,
+        /// and renders a formatted results table.
+        /// </summary>
+        /// <param name="context">The command context provided by Spectre.Console.Cli.</param>
+        /// <param name="settings">The command settings containing the search query.</param>
+        /// <param name="cancellationToken">Token to cancel the operation.</param>
+        /// <returns>Exit code 0 on success.</returns>
         public override async Task<int> ExecuteAsync(
             CommandContext context,
             SearchCommandSettings settings,

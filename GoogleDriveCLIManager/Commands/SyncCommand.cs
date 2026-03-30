@@ -9,8 +9,18 @@
     using System.Diagnostics;
     using System.Threading.Tasks.Dataflow;
 
+    /// <summary>
+    /// Settings for the sync command.
+    /// No additional arguments or options are required —
+    /// sync automatically downloads all files from Google Drive.
+    /// </summary>
     public class SyncCommandSettings : CommandSettings { }
 
+    /// <summary>
+    /// Command that downloads all files from the authenticated user's Google Drive
+    /// to a local Downloads directory using parallel processing.
+    /// Uses ActionBlock for bounded parallelism and Interlocked for thread-safe statistics.
+    /// </summary>
     public class SyncCommand : AsyncCommand<SyncCommandSettings>
     {
         private readonly IGoogleDriveService _driveService;
@@ -34,6 +44,15 @@
             _manifestRepository = manifestRepository;
         }
 
+        /// <summary>
+        /// Executes the sync command.
+        /// Fetches all Drive files, filters already downloaded ones via manifest,
+        /// downloads new files in parallel and displays statistics on completion.
+        /// </summary>
+        /// <param name="context">The command context provided by Spectre.Console.Cli.</param>
+        /// <param name="settings">The command settings.</param>
+        /// <param name="cancellationToken">Token to cancel the operation.</param>
+        /// <returns>Exit code 0 on success.</returns>
         public override async Task<int> ExecuteAsync(
             CommandContext context,
             SyncCommandSettings settings,
@@ -101,6 +120,15 @@
             return 0;
         }
 
+        /// <summary>
+        /// Downloads a single file from Google Drive and saves it locally.
+        /// Updates thread-safe counters and manifest entry on success.
+        /// Catches and logs exceptions without interrupting other parallel downloads.
+        /// </summary>
+        /// <param name="file">The Drive file to download.</param>
+        /// <param name="manifest">The sync manifest to update after successful download.</param>
+        /// <param name="progressTask">The Spectre.Console progress bar task to increment.</param>
+        /// <param name="cancellationToken">Token to cancel the operation.</param>
         private async Task DownloadFileAsync(
             DriveFileInfo file,
             GoogleDriveCLI.Models.SyncManifest manifest,
@@ -144,6 +172,13 @@
             }
         }
 
+        /// <summary>
+        /// Renders a formatted statistics table to the console after sync completes.
+        /// Shows total files, successful downloads, skipped files, failures,
+        /// total data downloaded and elapsed time.
+        /// </summary>
+        /// <param name="elapsed">The total time taken for the sync operation.</param>
+        /// <param name="totalOnDrive">The total number of files found on Google Drive.</param>
         private void DisplayStatistics(TimeSpan elapsed, int totalOnDrive)
         {
             AnsiConsole.WriteLine();
